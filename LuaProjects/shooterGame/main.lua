@@ -220,7 +220,7 @@ local function updateAndCheckEnemy(dt)
 		if checkDistCollision(enemy,player) then
 				player.handleEnemyDamage(enemy.getDamage())
 				if player.getHealth() <= 0 then
-					player = null
+					playerDead = true
 				end
 				table.remove(enemies, enIndex)
 				killCount = killCount + 1
@@ -258,7 +258,7 @@ local function generateWave(wave)
 	if enemyDamage > 20 then
 		enemyDamage = 20
 	end
-	for enemy = wave * 5, 1, -1 do
+	for enemy = enemyCount, 1, -1 do
 		xPos= math.random(player.getX() - windowWidth * 2, player.getX() + windowWidth * 2)
 		yPos= math.random(player.getY() - windowHeight * 2, player.getY() + windowHeight * 2)
 		enemy = createEnemy(xPos, yPos, enemyHealth, 20, enemyDamage, enemySpeed)
@@ -278,7 +278,7 @@ function love.load(arg)
 	love.graphics.setBackgroundColor(0.21, 0.67, 0.97)
 	xMouse = 0
 	yMouse = 0
-	wave = 1
+	wave = 0
 	enemies = {}
 	killCount = 0
 	itemsGenerated = 0
@@ -286,7 +286,7 @@ function love.load(arg)
 	
 	table.insert(enemies, enemy)
 	table.insert(enemies, enemy2)
-	
+	playerDead = false
 	bullets = {}
 	items = {}
 
@@ -303,38 +303,51 @@ local function drawUI()
 	love.graphics.print("ENEMIES ALIVE: " .. tableLength(enemies), 50, windowHeight - 50, 0, 2, 2, 0,0,0,0)
 end
 
+local function drawDeadUI() 
+	if playerDead == true then
+		love.graphics.print("GAME OVER", 50, 50, 0, 5, 5, 0,0,0,0)
+		love.graphics.print("WAVE " .. wave, 50, 150, 0, 2, 2, 0,0,0,0)
+		love.graphics.print("KILLS: " .. killCount, 50,200, 0, 2, 2, 0,0,0,0)
+	end
+end	
+
 function love.draw()
-	player.draw()
-	drawUI()
-	for index, bullet in ipairs(bullets) do
-		bullet.draw()
-	end
+	if playerDead == false then
+		player.draw()
+		for index, bullet in ipairs(bullets) do
+			bullet.draw()
+		end
 
-	for index, enemy in ipairs(enemies) do
-		enemy.draw()
-	end
+		for index, enemy in ipairs(enemies) do
+			enemy.draw()
+		end
 
-	for index, item in ipairs(items) do
-		item.draw()
+		for index, item in ipairs(items) do
+			item.draw()
+		end
+		drawUI()
 	end
+	drawDeadUI()
 end
 
 function love.update(dt)
-
-	getMousePosition()
-	player.update(dt)
-	updateAndCheckBullet(dt)
-	updateAndCheckEnemy(dt)
-	updateAndCheckItems(dt)
-	if tableLength(enemies) == 0 then
-		wave = wave + 1
-		generateWave(wave)
-	end
-	
-	if killCount % 10 == 0  then
-		if itemsGenerated < killCount / 10 then
-			itemsGenerated = itemsGenerated + 1
-			spawnItem()
+	if playerDead == false then
+		getMousePosition()
+		player.update(dt)
+		updateAndCheckBullet(dt)
+		updateAndCheckEnemy(dt)
+		updateAndCheckItems(dt)
+		if tableLength(enemies) == 0 then
+			wave = wave + 1
+			generateWave(wave)
+		end
+		
+		if killCount % 10 == 0  then
+			if itemsGenerated < killCount / 10 then
+				itemsGenerated = itemsGenerated + 1
+				spawnItem()
+			end
 		end
 	end
+	
 end
