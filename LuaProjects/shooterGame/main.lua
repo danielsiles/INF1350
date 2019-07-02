@@ -139,7 +139,7 @@ local function createPlayer(xPos, yPos, playerRadius, playerSpeed, playerHealth,
 	end
 
 	local function shoot() 
-		mouseDown = love.mouse.isDown(2)
+		mouseDown = love.mouse.isDown(1)
 		if mouseDown then
 			if love.timer.getTime() - lastShoot > 0.2  then
 				lastShoot = love.timer.getTime()
